@@ -1,14 +1,22 @@
 import pandas as pd
-import utils.INO_SQL_Creds as creds
-# import AccountAudit.Build.utils.SF_Query as sfq
-# import AccountAudit.Build.utils.INO_SQL_Creds as creds
-from sqlalchemy import URL, create_engine
+from . import INO_SQL_Creds as creds
+from sqlalchemy import URL, create_engine, text, CHAR, VARCHAR, DECIMAL, DATE, FLOAT, Engine  # noqa: F401
 
 def active_credential_sign_in(server_name, database_name, connection_type=""):
-    engine = create_engine(
-    "mssql+pyodbc://"+ server_name + "/" + database_name +"?"
-    "driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
-    "&authentication=ActiveDirectoryIntegrated",
+    connection_url = URL.create(
+    "mssql+pyodbc",
+    username="",
+    password="",
+    host=server_name,
+    port=1433,
+    database=database_name,
+    query={
+        "driver": "ODBC Driver 17 for SQL Server",
+        "TrustServerCertificate": "yes",
+        "authentication": "ActiveDirectoryIntegrated",
+    },
+    )    
+    engine = create_engine(connection_url,
     use_insertmanyvalues=True,
     fast_executemany=True)
     if connection_type == "raw":
@@ -18,6 +26,7 @@ def active_credential_sign_in(server_name, database_name, connection_type=""):
         else:
             print("Connection Unsuccessful. Check Your VPN connection and try again.")
             return
+    
         return connection
     else:
         connection = engine.connect()
